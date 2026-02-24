@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Web</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Emoji Picker -->
+    <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1.14.1/index.js" type="module"></script>
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">
+            <i class="fab fa-telegram-plane"></i>
+        </div>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Страница входа (стиль Telegram) -->
+    <div class="auth-page" id="authPage">
+        <div class="auth-container">
+            <div class="auth-header">
+                <i class="fab fa-telegram-plane"></i>
+                <h1>Telegram</h1>
+                <p>Войдите в свой аккаунт</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="loginTab">Вход</button>
+                <button class="auth-tab" id="registerTab">Регистрация</button>
+            </div>
+
+            <!-- Форма входа -->
+            <div class="auth-form active" id="loginForm">
+                <div class="input-group">
+                    <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <button class="auth-button" id="loginBtn">
+                    <span>ВОЙТИ</span>
+                </button>
+                <button class="test-button" id="testAuthBtn">
+                    <i class="fas fa-flask"></i>
+                    Тестовый вход
+                </button>
+                <div class="auth-footer">
+                    <a href="#" id="forgotPasswordBtn">Забыли пароль?</a>
+                </div>
+            </div>
+
+            <!-- Форма регистрации -->
+            <div class="auth-form" id="registerForm">
+                <div class="input-group">
+                    <input type="text" id="registerName" placeholder="Имя" autocomplete="name">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="registerEmail" placeholder="Email" autocomplete="email">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="registerPassword" placeholder="Пароль" autocomplete="new-password">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="registerConfirmPassword" placeholder="Подтверждение пароля" autocomplete="new-password">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <button class="auth-button" id="registerBtn">
+                    <span>ЗАРЕГИСТРИРОВАТЬСЯ</span>
+                </button>
+            </div>
+
+            <!-- Форма сброса пароля -->
+            <div class="auth-form" id="resetForm">
+                <button class="back-button" id="backFromResetBtn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h3>Сброс пароля</h3>
+                <div class="input-group">
+                    <input type="email" id="resetEmail" placeholder="Ваш email">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <button class="auth-button" id="resetPasswordBtn">
+                    <span>ОТПРАВИТЬ</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основное приложение (Telegram стиль) -->
+    <div class="app-page" id="appPage">
+        <!-- Левый сайдбар - список чатов -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="menu-button" id="menuButton">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="search-button">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <!-- Профиль пользователя -->
+            <div class="profile-section" id="profileSection">
+                <div class="profile-avatar" id="profileAvatar">
+                    <span id="profileAvatarText"></span>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name" id="profileName">Загрузка...</div>
+                    <div class="profile-phone" id="profileEmail">@username</div>
+                </div>
+                <button class="settings-button" id="settingsBtn">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+
+            <!-- Поиск -->
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Поиск">
+            </div>
+
+            <!-- Список чатов -->
+            <div class="chats-list" id="chatsList">
+                <!-- Чаты будут загружаться сюда -->
+            </div>
+
+            <!-- Кнопка нового чата -->
+            <button class="new-chat-button" id="addChatBtn">
+                <i class="fas fa-pencil-alt"></i>
+            </button>
+        </div>
+
+        <!-- Центральная область - чат -->
+        <div class="chat-area">
+            <!-- Шапка чата -->
+            <div class="chat-header" id="chatHeader" style="display: none;">
+                <div class="chat-header-left">
+                    <button class="back-to-chats" id="backToChatsBtn">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="chat-avatar" id="chatAvatar"></div>
+                    <div class="chat-info">
+                        <div class="chat-title" id="chatName">Название чата</div>
+                        <div class="chat-status" id="chatStatus">был(а) недавно</div>
+                    </div>
+                </div>
+                <div class="chat-header-right">
+                    <button class="chat-action-btn" id="deleteChatBtn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Сообщения -->
+            <div class="messages-container" id="messagesContainer">
+                <!-- Сообщения будут загружаться сюда -->
+            </div>
+
+            <!-- Область ввода сообщения -->
+            <div class="message-input-wrapper" id="messageInputWrapper" style="display: none;">
+                <button class="attach-button" id="attachBtn">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="file" id="fileInput" style="display: none;">
+                <div class="message-input-container">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Написать сообщение..."
+                        rows="1"
+                    ></textarea>
+                    <button class="emoji-button" id="emojiBtn">
+                        <i class="far fa-smile"></i>
+                    </button>
+                </div>
+                <button class="send-button" id="sendMessageBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+            <!-- Пустое состояние -->
+            <div class="empty-chat" id="emptyChat">
+                <i class="fab fa-telegram-plane"></i>
+                <h3>Telegram Web</h3>
+                <p>Выберите чат для начала общения</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Меню пользователя (выпадающее) -->
+    <div class="user-menu" id="userMenu">
+        <div class="user-menu-header">
+            <div class="user-menu-avatar" id="menuAvatar"></div>
+            <div class="user-menu-info">
+                <div class="user-menu-name" id="menuName"></div>
+                <div class="user-menu-email" id="menuEmail"></div>
+            </div>
+        </div>
+        <div class="user-menu-item" id="menuSettings">
+            <i class="fas fa-cog"></i>
+            <span>Настройки</span>
+        </div>
+        <div class="user-menu-item" id="menuTheme">
+            <i class="fas fa-moon"></i>
+            <span>Темная тема</span>
+        </div>
+        <div class="user-menu-item" id="menuLogout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Выйти</span>
+        </div>
+    </div>
+
+    <!-- Модальные окна -->
+    <div class="modal" id="newChatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Новый чат</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-input-group">
+                    <label>Email пользователя</label>
+                    <input type="email" id="newChatEmail" placeholder="friend@mail.com">
+                </div>
+                <div class="modal-input-group">
+                    <label>Имя контакта</label>
+                    <input type="text" id="newChatName" placeholder="Как сохранить">
+                </div>
+                <button class="modal-button" id="createChatBtn">
+                    <i class="fas fa-plus-circle"></i>
+                    Создать чат
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Настройки</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-input-group">
+                    <label>Ваше имя</label>
+                    <input type="text" id="settingsName" placeholder="Имя">
+                </div>
+                <div class="modal-input-group">
+                    <label>О себе</label>
+                    <textarea id="settingsBio" placeholder="Расскажите о себе"></textarea>
+                </div>
+                <div class="modal-input-group">
+                    <label>Цвет аватара</label>
+                    <input type="color" id="settingsColor" value="#2AABEE">
+                </div>
+                <button class="modal-button" id="saveSettingsBtn">
+                    <i class="fas fa-save"></i>
+                    Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель эмодзи (скрыта по умолчанию) -->
+    <div class="emoji-panel" id="emojiPanel">
+        <emoji-picker></emoji-picker>
+    </div>
+
+    <!-- Toast уведомления -->
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
