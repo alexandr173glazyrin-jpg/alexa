@@ -22,7 +22,7 @@ db.settings({
     ignoreUndefinedProperties: true 
 });
 
-class TelegramApp {
+class AlexaApp {
     constructor() {
         this.currentUser = null;
         this.currentUserData = null;
@@ -695,7 +695,7 @@ class TelegramApp {
     
     async testAuth() {
         try {
-            const testEmail = `test_${Date.now()}@telegram.com`;
+            const testEmail = `test_${Date.now()}@alexa.com`;
             const testPassword = '123456';
             const testName = 'Тестовый пользователь';
             
@@ -1270,5 +1270,5 @@ class TelegramApp {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new TelegramApp();
+    window.app = new AlexaApp();
 });
