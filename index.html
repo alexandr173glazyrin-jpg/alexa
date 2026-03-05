@@ -24,7 +24,7 @@
         <div class="loading-spinner"></div>
     </div>
 
-    <!-- Страница входа (стиль Telegram) -->
+    <!-- Страница входа -->
     <div class="auth-page" id="authPage">
         <div class="auth-container">
             <div class="auth-header">
@@ -100,15 +100,15 @@
         </div>
     </div>
 
-    <!-- Основное приложение ( стиль) -->
+    <!-- Основное приложение -->
     <div class="app-page" id="appPage">
-        <!-- Левый сайдбар - список чатов -->
+        <!-- Левый сайдбар -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="menu-button" id="menuButton">
                     <i class="fas fa-bars"></i>
                 </div>
-                <div class="search-button">
+                <div class="search-button" id="searchButton">
                     <i class="fas fa-search"></i>
                 </div>
             </div>
@@ -133,6 +133,14 @@
                 <input type="text" id="searchInput" placeholder="Поиск">
             </div>
 
+            <!-- Заголовок архива -->
+            <div class="archive-header" id="archiveHeader" style="display: none;">
+                <button class="back-to-chats-small" id="backFromArchiveBtn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <span id="archiveHeaderTitle">Архив чатов</span>
+            </div>
+
             <!-- Список чатов -->
             <div class="chats-list" id="chatsList">
                 <!-- Чаты будут загружаться сюда -->
@@ -154,11 +162,24 @@
                     </button>
                     <div class="chat-avatar" id="chatAvatar"></div>
                     <div class="chat-info">
-                        <div class="chat-title" id="chatName">Название чата</div>
+                        <div class="chat-title clickable" id="chatName">Название чата</div>
                         <div class="chat-status" id="chatStatus">был(а) недавно</div>
                     </div>
                 </div>
                 <div class="chat-header-right">
+                    <!-- Кнопки для каналов -->
+                    <button class="chat-action-btn" id="manageChannelBtn" title="Управление каналом" style="display: none;">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="chat-action-btn" id="subscribeChannelBtn" title="Подписаться" style="display: none;">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="chat-action-btn" id="unsubscribeChannelBtn" title="Отписаться" style="display: none;">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="chat-action-btn" id="archiveChatBtn" title="Архивировать">
+                        <i class="fas fa-archive"></i>
+                    </button>
                     <button class="chat-action-btn" id="deleteChatBtn">
                         <i class="fas fa-trash-alt"></i>
                     </button>
@@ -200,7 +221,7 @@
         </div>
     </div>
 
-    <!-- Меню пользователя (выпадающее) -->
+    <!-- Меню пользователя -->
     <div class="user-menu" id="userMenu">
         <div class="user-menu-header">
             <div class="user-menu-avatar" id="menuAvatar"></div>
@@ -208,6 +229,18 @@
                 <div class="user-menu-name" id="menuName"></div>
                 <div class="user-menu-email" id="menuEmail"></div>
             </div>
+        </div>
+        <div class="user-menu-item" id="menuCreateChannel">
+            <i class="fas fa-bullhorn"></i>
+            <span>Создать канал</span>
+        </div>
+        <div class="user-menu-item" id="menuArchive">
+            <i class="fas fa-archive"></i>
+            <span>Архив чатов</span>
+        </div>
+        <div class="user-menu-item" id="menuFavorites">
+            <i class="fas fa-star"></i>
+            <span>Избранное</span>
         </div>
         <div class="user-menu-item" id="menuSettings">
             <i class="fas fa-cog"></i>
@@ -224,6 +257,8 @@
     </div>
 
     <!-- Модальные окна -->
+
+    <!-- Новый личный чат -->
     <div class="modal" id="newChatModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -232,8 +267,8 @@
             </div>
             <div class="modal-body">
                 <div class="modal-input-group">
-                    <label>Email пользователя</label>
-                    <input type="email" id="newChatEmail" placeholder="friend@mail.com">
+                    <label>Email или @username пользователя</label>
+                    <input type="text" id="newChatEmail" placeholder="friend@mail.com или @username">
                 </div>
                 <div class="modal-input-group">
                     <label>Имя контакта</label>
@@ -247,6 +282,7 @@
         </div>
     </div>
 
+    <!-- Настройки пользователя -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -257,6 +293,11 @@
                 <div class="modal-input-group">
                     <label>Ваше имя</label>
                     <input type="text" id="settingsName" placeholder="Имя">
+                </div>
+                <div class="modal-input-group">
+                    <label>Username (без @)</label>
+                    <input type="text" id="settingsUsername" placeholder="username" pattern="[a-zA-Z0-9_]{3,20}">
+                    <small>Только латиница, цифры и _, от 3 до 20 символов</small>
                 </div>
                 <div class="modal-input-group">
                     <label>О себе</label>
@@ -274,10 +315,129 @@
         </div>
     </div>
 
-    <!-- Панель эмодзи (скрыта по умолчанию) -->
+    <!-- Избранное -->
+    <div class="modal" id="favoritesModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Избранные сообщения</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="favoritesList">
+                <!-- Сюда будут загружаться избранные сообщения -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Редактирование имени контакта -->
+    <div class="modal" id="editContactModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Изменить имя контакта</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-input-group">
+                    <label>Новое имя</label>
+                    <input type="text" id="editContactName" placeholder="Имя">
+                </div>
+                <button class="modal-button" id="saveContactNameBtn">
+                    <i class="fas fa-save"></i>
+                    Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Создание канала -->
+    <div class="modal" id="createChannelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Создать канал</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-input-group">
+                    <label>Название канала</label>
+                    <input type="text" id="channelName" placeholder="Название" maxlength="50">
+                </div>
+                <div class="modal-input-group">
+                    <label>Описание (необязательно)</label>
+                    <textarea id="channelDescription" placeholder="О чём канал?" rows="3"></textarea>
+                </div>
+                <div class="modal-input-group">
+                    <label>Аватар (необязательно)</label>
+                    <input type="file" id="channelAvatar" accept="image/*">
+                    <small>Можно загрузить позже</small>
+                </div>
+                <button class="modal-button" id="createChannelBtn">
+                    <i class="fas fa-plus-circle"></i>
+                    Создать канал
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Управление каналом (НОВОЕ) -->
+    <div class="modal" id="manageChannelModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Управление каналом</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h4>Основные настройки</h4>
+                    <div class="modal-input-group">
+                        <label>Название канала</label>
+                        <input type="text" id="manageChannelName" placeholder="Название">
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Описание</label>
+                        <textarea id="manageChannelDescription" placeholder="Описание" rows="3"></textarea>
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Аватар</label>
+                        <input type="file" id="manageChannelAvatar" accept="image/*">
+                        <small>Оставьте пустым, чтобы не менять</small>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h4>Добавить подписчика</h4>
+                    <div class="modal-input-group" style="display: flex; gap: 8px;">
+                        <input type="text" id="addSubscriberInput" placeholder="Email или @username" style="flex: 1;">
+                        <button class="modal-button" id="addSubscriberBtn" style="width: auto; padding: 12px 20px;">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h4>Подписчики (<span id="subscriberCount">0</span>)</h4>
+                    <div id="subscribersList" class="subscribers-list">
+                        <!-- Список подписчиков будет загружаться сюда -->
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button class="modal-button" id="saveChannelSettingsBtn" style="flex: 2;">
+                        <i class="fas fa-save"></i> Сохранить изменения
+                    </button>
+                    <button class="modal-button" id="deleteChannelBtn" style="flex: 1; background: var(--secondary-gradient);">
+                        <i class="fas fa-trash-alt"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель эмодзи -->
     <div class="emoji-panel" id="emojiPanel">
         <emoji-picker></emoji-picker>
     </div>
+
+    <!-- Звук уведомления -->
+    <audio id="notificationSound" preload="auto" style="display: none;"></audio>
 
     <!-- Toast уведомления -->
     <div class="toast" id="toast"></div>
