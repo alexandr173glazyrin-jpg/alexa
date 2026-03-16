@@ -108,9 +108,6 @@
                 <div class="menu-button" id="menuButton">
                     <i class="fas fa-bars"></i>
                 </div>
-                <div class="search-button" id="searchButton">
-                    <i class="fas fa-search"></i>
-                </div>
             </div>
 
             <!-- Профиль пользователя -->
@@ -163,13 +160,21 @@
                     <div class="chat-avatar" id="chatAvatar"></div>
                     <div class="chat-info">
                         <div class="chat-title clickable" id="chatName">Название чата</div>
-                        <div class="chat-status" id="chatStatus">был(а) недавно</div>
+                        <div class="chat-status" id="chatStatus">участников: 0</div>
+                        <!-- Закрепленное сообщение -->
+                        <div class="pinned-message" id="pinnedMessage" style="display: none;">
+                            <i class="fas fa-thumbtack"></i>
+                            <span id="pinnedMessageText"></span>
+                        </div>
                     </div>
                 </div>
                 <div class="chat-header-right">
                     <!-- Кнопки для каналов -->
                     <button class="chat-action-btn" id="manageChannelBtn" title="Управление каналом" style="display: none;">
                         <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="chat-action-btn" id="manageGroupBtn" title="Управление группой" style="display: none;">
+                        <i class="fas fa-users-cog"></i>
                     </button>
                     <button class="chat-action-btn" id="subscribeChannelBtn" title="Подписаться" style="display: none;">
                         <i class="fas fa-plus"></i>
@@ -197,6 +202,18 @@
                     <i class="fas fa-paperclip"></i>
                 </button>
                 <input type="file" id="fileInput" style="display: none;">
+                
+                <!-- Превью ответа на сообщение -->
+                <div class="reply-preview" id="replyPreview" style="display: none;">
+                    <div class="reply-preview-content">
+                        <div class="reply-preview-sender" id="replyPreviewSender"></div>
+                        <div class="reply-preview-text" id="replyPreviewText"></div>
+                    </div>
+                    <button class="reply-preview-close" id="cancelReplyBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
                 <div class="message-input-container">
                     <textarea 
                         id="messageInput" 
@@ -229,6 +246,10 @@
                 <div class="user-menu-name" id="menuName"></div>
                 <div class="user-menu-email" id="menuEmail"></div>
             </div>
+        </div>
+        <div class="user-menu-item" id="menuCreateGroup">
+            <i class="fas fa-users"></i>
+            <span>Создать группу</span>
         </div>
         <div class="user-menu-item" id="menuCreateChannel">
             <i class="fas fa-bullhorn"></i>
@@ -282,6 +303,102 @@
         </div>
     </div>
 
+    <!-- Создание группы -->
+    <div class="modal" id="createGroupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Создать группу</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-input-group">
+                    <label>Название группы</label>
+                    <input type="text" id="groupName" placeholder="Название" maxlength="50">
+                </div>
+                <div class="modal-input-group">
+                    <label>Описание (необязательно)</label>
+                    <textarea id="groupDescription" placeholder="О чём группа?" rows="3"></textarea>
+                </div>
+                <div class="modal-input-group">
+                    <label>Аватар (необязательно)</label>
+                    <input type="file" id="groupAvatar" accept="image/*">
+                    <small>Можно загрузить позже</small>
+                </div>
+                <div class="modal-input-group">
+                    <label>Добавить участников (по одному, вводите email или @username и нажимайте "Добавить")</label>
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="addMemberInput" placeholder="friend@mail.com или @username" style="flex: 1;">
+                        <button class="modal-button" id="addMemberBtn" style="width: auto; padding: 12px 20px;">
+                            <i class="fas fa-user-plus"></i> Добавить
+                        </button>
+                    </div>
+                    <div id="membersPreview" class="members-preview"></div>
+                </div>
+                <button class="modal-button" id="createGroupBtn">
+                    <i class="fas fa-plus-circle"></i>
+                    Создать группу
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Управление группой -->
+    <div class="modal" id="manageGroupModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Управление группой</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h4>Основные настройки</h4>
+                    <div class="modal-input-group">
+                        <label>Название группы</label>
+                        <input type="text" id="manageGroupName" placeholder="Название">
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Описание</label>
+                        <textarea id="manageGroupDescription" placeholder="Описание" rows="3"></textarea>
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Аватар</label>
+                        <input type="file" id="manageGroupAvatar" accept="image/*">
+                        <small>Оставьте пустым, чтобы не менять</small>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h4>Участники (<span id="memberCount">0</span>)</h4>
+                    <div id="membersList" class="members-list"></div>
+                </div>
+
+                <div class="modal-section">
+                    <h4>Добавить участника</h4>
+                    <div class="modal-input-group" style="display: flex; gap: 8px;">
+                        <input type="text" id="addGroupMemberInput" placeholder="Email или @username" style="flex: 1;">
+                        <button class="modal-button" id="addGroupMemberBtn" style="width: auto; padding: 12px 20px;">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button class="modal-button" id="saveGroupSettingsBtn" style="flex: 2;">
+                        <i class="fas fa-save"></i> Сохранить изменения
+                    </button>
+                    <button class="modal-button" id="deleteGroupBtn" style="flex: 1; background: var(--secondary-gradient);">
+                        <i class="fas fa-trash-alt"></i> Удалить
+                    </button>
+                </div>
+                <div style="margin-top: 12px;">
+                    <button class="modal-button" id="leaveGroupBtn" style="background: var(--secondary-gradient);">
+                        <i class="fas fa-sign-out-alt"></i> Покинуть группу
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Настройки пользователя -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
@@ -304,8 +421,20 @@
                     <textarea id="settingsBio" placeholder="Расскажите о себе"></textarea>
                 </div>
                 <div class="modal-input-group">
+                    <label>Фото профиля</label>
+                    <input type="file" id="settingsAvatar" accept="image/*">
+                    <small>Рекомендуемый размер: до 5 МБ</small>
+                </div>
+                <div class="modal-input-group">
                     <label>Цвет аватара</label>
                     <input type="color" id="settingsColor" value="#2AABEE">
+                </div>
+                <div class="modal-input-group">
+                    <label class="switch">
+                        <input type="checkbox" id="settingsCompression" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <label>Сжимать изображения (экономия трафика)</label>
                 </div>
                 <button class="modal-button" id="saveSettingsBtn">
                     <i class="fas fa-save"></i>
@@ -377,7 +506,7 @@
         </div>
     </div>
 
-    <!-- Управление каналом (НОВОЕ) -->
+    <!-- Управление каналом -->
     <div class="modal" id="manageChannelModal">
         <div class="modal-content modal-lg">
             <div class="modal-header">
@@ -428,6 +557,65 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно профиля пользователя -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Профиль</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="profileModalBody">
+                <div class="profile-view">
+                    <div class="profile-view-avatar" id="profileViewAvatar"></div>
+                    <div class="profile-view-name" id="profileViewName">Загрузка...</div>
+                    <div class="profile-view-username" id="profileViewUsername"></div>
+                    <div class="profile-view-bio" id="profileViewBio"></div>
+                    <div class="profile-view-actions">
+                        <button class="modal-button" id="profileSendMessageBtn">
+                            <i class="fas fa-comment"></i> Написать сообщение
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Меню сообщения (при долгом нажатии) -->
+    <div class="message-context-menu" id="messageContextMenu">
+        <div class="context-menu-item" id="contextReply">
+            <i class="fas fa-reply"></i>
+            <span>Ответить</span>
+        </div>
+        <div class="context-menu-item" id="contextPin">
+            <i class="fas fa-thumbtack"></i>
+            <span id="pinMenuItem">Закрепить</span>
+        </div>
+        <div class="context-menu-item" id="contextFavorite">
+            <i class="far fa-star"></i>
+            <span>В избранное</span>
+        </div>
+        <div class="context-menu-item" id="contextCopy">
+            <i class="fas fa-copy"></i>
+            <span>Копировать</span>
+        </div>
+        <div class="context-menu-item" id="contextDelete">
+            <i class="fas fa-trash"></i>
+            <span>Удалить</span>
+        </div>
+    </div>
+
+    <!-- Панель реакций -->
+    <div class="reactions-panel" id="reactionsPanel">
+        <div class="reactions-list">
+            <button class="reaction-btn" data-reaction="👍">👍</button>
+            <button class="reaction-btn" data-reaction="❤️">❤️</button>
+            <button class="reaction-btn" data-reaction="😂">😂</button>
+            <button class="reaction-btn" data-reaction="😮">😮</button>
+            <button class="reaction-btn" data-reaction="😢">😢</button>
+            <button class="reaction-btn" data-reaction="👎">👎</button>
         </div>
     </div>
 
